@@ -2,7 +2,9 @@
 
 1. **申请 共享内存cache**
 
-   \_\_shared\_\_ float cache[threadsPerBlock]
+   ```c
+   __shared__ float cache[threadsPerBlock]
+   ```
 
    这里要注意一个概念：**一旦这样声明共享内存，就会创建与线程块的数量相同的数组cache**，即每个线程块都会对应一个这样的数组cache且不同线程块中的共享内存是无法交流的
 
@@ -16,7 +18,7 @@
 2. **每个线程单独工作**
 
    ```C
-   	//tid等于之前写过的程序的i，也就是所有的线程块中的所有线程总数
+   	//tid等于之前写过的程序的i，
    	int tid = threadIdx.x + blockIdx.x * blockDim.x;
    	//cacheIndex的大小也就是每个线程块中的线程总数，表示数组的大小
        int cacheIndex = threadIdx.x;   
