@@ -6,7 +6,7 @@
    __shared__ float cache[threadsPerBlock]
    ```
 
-   这里要注意一个概念：**一旦这样声明共享内存，就会创建与线程块的数量相同的数组cache**，即每个线程块都会对应一个这样的数组cache且不同线程块中的共享内存是无法交流的
+   这里要注意一个概念：**一旦这样声明共享内存，就会创建与线程块的数量相同的数组cache**，即每个**线程块**都会对应一个这样的数组cache且不同线程块中的共享内存是无法交流的
 
    在这个例子中，共享内存的大小与每个线程块中的线程个数相同；
 
@@ -18,9 +18,9 @@
 2. **每个线程单独工作**
 
    ```C
-   	//tid等于之前写过的程序的i，
+   	//tid等于之前写过的程序的i，即当前线程在所有线程中的位置标志
    	int tid = threadIdx.x + blockIdx.x * blockDim.x;
-   	//cacheIndex的大小也就是每个线程块中的线程总数，表示数组的大小
+   	//cacheIndex是该线程在其所在的线程块中的下标
        int cacheIndex = threadIdx.x;   
    	
    
@@ -34,7 +34,11 @@
            //处理当前能够使用的线程数的数据，也就是所有线程总数
            temp += a[tid] * b[tid];
            //tid加上一个总线程数
-           //疑问：这个跟这个代码块的开头的定义有什么不一样的么。。。
+           //因为我们的线程总数小于向量大小，
+           //所以我们第一次求取的是当前线程总数所能求取的最大的内容
+           //所以我们下一次运算的时候，需要把待处理数据整体向后移动总线程数
+           //然后再求取
+           //循环往复
            tid += blockDim.x * gridDim.x;
            //blockDim.x = 每个线程块x方向的线程总数
            //gridDim.x = 每个网格x方向线程块的总数
@@ -43,12 +47,17 @@
 
    ==难点：tid += blockDim.x * gridDim.x==
 
+   **注释中已经详细给出解答**
+
 3. **多个线程协同工作**
 
    通过共享内存，线程之间完成协作。每个线程将temp的值保存到每个线程块的共享内存(shared memory)中，即数组cache中，相应的代码：
 
    ```c
+   	//将当前结果保存在该线程对应的cache数组的对应位置
    	cache[cacheIndex] = temp;
+   	//__syncthreads() is you garden variety thread barrier. Any thread reaching the barrier waits until all of the other threads in that block also reach it. It is designed for avoiding race conditions when loading shared memory, and the compiler will not move memory reads/writes around a __syncthreads(). 
+   	//是否可以理解为操作系统中的互斥？
        __syncthreads();
    ```
 

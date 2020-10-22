@@ -2,6 +2,10 @@
 
 
 
+[TOC]
+
+
+
 #### CUDA简介
 
 ​	CUDA(Compute Unifide Device Architecture):是英伟达公司(nVIDIA)2006年11月提吃的一种通用并行的架构(应用于计算密集型,SIMD)，是一种通用并行计算平台和编程模型。是随着多核CPU和众核GPU的出现，而出现的新的并行程序架构。
